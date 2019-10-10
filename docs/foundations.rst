@@ -35,13 +35,25 @@ Every time the current state changes, from the usual user applying a declaration
 Why "k8s"? Doesn't that sound as "keights"?
 -------------------------------------------
 
+It sure does sound wrong, but the acronym is purely based on the character count between the 'k' and 's'::
+
+  kubernetes
+  -12345678-
 
 Concepts
 ========
 
+The |k8s| platform relies on a couple of technologies to make all the orchestration and workload execution happen, and a minimal grasp of each is recommended in order to fully comprehend the k8s.
+
 
 Containers
 ----------
+
+Made popular through a branded "orchestration", Docker, containers are a simplified usage form of some Linux kernel features, namely `namespace` and `cgroup`. To put it simply, these kernel features allow to run isolated process as if they were in a machine of their own, much like the `chroot`. The result transparently resembles a virtual machine, but has none of the overhead of running a complete OS.
+
+`cgroup` stands for "control group", which is a feature that dates back to 2006 and isolates and limits resource usage (CPU, memory, I/O, network), allows accounting (e.g. for billing purposes) and controlling like freezing, snapshoting and stopping.
+
+`namespace` is a feature that allows process isolation so that they cannot obtain nor access resources outside of the group.
 
 
 YAML and JSON
