@@ -10,10 +10,10 @@
 :Revision: $Revision: 1 $
 :Description: This material aims at demystifying and explaining what |k8s|_ is and what it's supposed to do from a very practical point of view. It is by no means a substitute of the official site and documentation. For more detailed (and formal) information, check the official sources.
 
-.. header:: Kubernetes - Foundations for dummies
-.. footer:: https://github.com/dafiti-group/k8s-101
+.. header:: "Hope is not a strategy."
+.. footer:: Read more on https://kubernetes.io/docs/
 
-.. epigraph:: "Hope is not a strategy."
+.. epigraph:: This material aims at demystifying and explaining what |k8s|_ is and what it's supposed to do from a very practical point of view. It is by no means a substitute of the official site and documentation. For more detailed (and formal) information, check the official sources.
 
 .. sectnum::
 
@@ -98,19 +98,19 @@ This API also validates all objects (i.e. pod, service, deployment, etc) to ensu
 Control loop daemon (kube-controller-manager)
 .............................................
 
-.. rubric:: TODO
+The core of state management, it's the main control loop that coordinates all controller actions needed to change the current shared state towards the desired state. It does so by communicating with the apiserver to query the states, and the controllers change the state whenever they complete an action. Core and third-party controllers are all bound to this loop.
 
 
 Workload scheduler (kube-scheduler)
 ...................................
 
-.. rubric:: TODO
+Service responsible for the definition of where a workload will be run. It does so by evaluating resource requirements, constraints, (anti-)affinity, node taints and so on. If all nodes are tied (e.g. on a new cluster or an unconstrained/untainted cluster + no pod affinity), it'll randomly choose a node.
 
 
 Cloud-specific control loops (cloud-controller-manager)
 .......................................................
 
-.. rubric:: TODO
+Control loop service that allows cloud providers to create and plug platform-specific controllers to interact with their services, e.g. a controller that creates an instance of the provider's load balancer automatically for a specific |k8s|_ kind_.
 
 
 Nodes
@@ -125,13 +125,15 @@ Nodes
 Node agent (kubelet)
 ....................
 
-.. rubric:: TODO
+Agent that runs on each cluster node. It's responsible for registering the node with the cluster's apiserver and for running and keeping healthy the given Pod_ specs from apiserver (it can also run pods from a given local path, query an HTTP endpoint or act as an HTTP server to receive requests directly, but the most common way to deploy is through the apiserver).
 
 
 Node network proxy (kube-proxy)
 ...............................
 
-.. rubric:: TODO
+Proxy that's responsible for managing the required cluster service_ specs on the node. Sets up the node routing table, allowing and denying communication as per the specs provided. Also provides routes for forward and round robin requests between pods.
+
+By default uses `netfilter` for setting the kernel connection parameters and setting up rules (a.k.a. `iptables`).
 
 
 Networking
@@ -139,9 +141,33 @@ Networking
 
 .. rubric:: TODO
 
+Objects
+-------
+
+|k8s| objects are well-defined, persistent entities that describe a containerized application, a policy or a resource that represent a state of something, be it an application environment, configuration, network policies, a user, a role, and so on. A pod object with a single nginx container looks like this:
+
+.. code:: yaml
+
+  apiVersion: apps/v1
+  kind: Pod
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+      - containerPort: 80
+
+
+Object Kind
++++++++++++
+
+Every |k8s| object has a kind. Kinds are like classes, in which each one has a defined set of fields and values, required or optional, needed for that kind to work properly. They are also used by controllers to watch over for changes on specific kinds that they know how to act upon. The core replication controller watches over the ReplicaSet_ kind, for instance: whenever there's a new ReplicaSet_ or a change on an existing one, the controller do it's magic.
+
+But don't take the "defined" as granted: any kind can be stored in the cluster, even a kind completely unknown.
+
 
 Object Management
------------------
++++++++++++++++++
 
 .. rubric:: TODO
 
@@ -369,3 +395,4 @@ Node taints and tolerations
 .. _cloud-controller-manager: https://kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/
 .. _kubelet: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
 .. _kube-proxy: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
+.. _kind: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
