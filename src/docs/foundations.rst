@@ -23,13 +23,21 @@
 TL;DR What is `Kubernetes`?
 ===========================
 
-`Kubernetes`_ (a.k.a. k8s_) is simply a state machine that constantly adjusts itself to equals the current state with the stored desired definitions, known as the desired state.
+.. figure:: ../images/kubernetes_logo.png
+  :height: 64px
+  :width: 64px
+  :scale: 50%
+  :alt: Kubernetes logo
+  :target: k8s_
+
+
+`Kubernetes`_ (a.k.a. k8s_) is simply a state machine that constantly adjusts itself to equals the current state with the stored desired definitions, known as the desired state. This applies for all its resources, i.e. configurations, policies, application containers and custom resources.
 
 
 How does it work?
 -----------------
 
-Every time the current state changes, from the usual user applying a declaration, doing an imperative change to an internal event or change from the cluster itself, |k8s|_ will compare the current state against the desired one, and acts if something has to be changed, e.g. create and start up a Pod_ or update a ConfigMap_.
+Every time the current state changes, from the usual user applying a declaration, doing an imperative change to an internal event or change from the cluster itself, |k8s|_ will compare the current state against the desired one, and acts if something has to be changed, e.g. create and start up a Pod_, drop an old Deployment_ or update a ConfigMap_.
 
 
 Why "k8s"? Doesn't that sound as "keights"?
@@ -70,16 +78,15 @@ Architecture
 
 |k8s| is the name of a number of application services that, when coupled together, make the object management happen. These applications communicate between each one to get and set states, schedule changes, assign IPs, ports, routes, receive signals of events and constant monitor the cluster.
 
-Cluster
--------
+Cluster Nodes
+-------------
 
-A |k8s| cluster is composed of at least one machine, which runs both as the control plane and as a node. Usually (and recommended), though, the cluster has a dedicated machine for the control plane, and multiple node machines to distribute the workloads.
+Each host inside a |k8s| cluster is called a node. A host can be a physical machine or a VM. Each cluster is composed of at least one host, which runs both as the control plane and as a worker. Usually (and recommended), though, the cluster has a dedicated control plane host and multiple worker nodes distribute the workloads.
 
+Control Plane node
+++++++++++++++++++
 
-Control Plane
-+++++++++++++
-
-As the name suggests, it's the central control of the whole cluster. In this machine runs most of the |k8s| software:
+The central control of the whole cluster, this node runs most of the |k8s| software, and is responsible for controlling all the worker nodes. It runs:
 
 * kube-apiserver_
 * kube-controller-manager_
@@ -113,10 +120,10 @@ Cloud-specific control loops (cloud-controller-manager)
 Control loop service that allows cloud providers to create and plug platform-specific controllers to interact with their services, e.g. a controller that creates an instance of the provider's load balancer automatically for a specific |k8s|_ kind_.
 
 
-Nodes
-+++++
+Worker Nodes
+++++++++++++
 
-.. rubric:: TODO
+Workload-running capable hosts in a |k8s| cluster. These hosts are managed by the control plane apiserver, which sends the wanted routes, firewall rules and state, like which containers should be running at a given time for instance. Each node runs two |k8s| agents:
 
 * kubelet_
 * kube-proxy_
@@ -139,7 +146,19 @@ By default uses `netfilter` for setting the kernel connection parameters and set
 Networking
 ----------
 
-.. rubric:: TODO
+The |k8s| network architecture aims at being the most frictionless possible. That means a vanilla |k8s| cluster, on premisses, will bridge a Pod_ into the local network, i.e. the Pod_ will have a LAN IP and use the same IP subnet of the node it runs in, exactly the same way a bridged connection from VMs and containers do.
+
+A |k8s| cluster roughly supports up to 5,000 nodes and 150,000 pods. As each Node_ and Pod_ have an IP, a cluster can consume at most 155,000 IPs. Given that working with a Class B subnet (ranges from 128 to 191, with 16 bits masks) gives at most 65534 hosts, most large clusters will need to break down the nodes and pods allocation to multiple subnets. It's also a common security practice to create multiple isolated subnets to reduce the attack surface in case of a host breach.
+
+|k8s| does support working with multiple subnets and cloud VLANs by implementing the `Container Network Interface`_ (CNI) and through CNI plugins. Also those plugins can change the way Pods_ communicate with each other, like using kernel filters (BPF, eBPF, XDP) and so on.
+
+Some well-known CNI plugin names are:
+
+* Calico_ (L3 VLAN)
+* Cilium_ (BPF and XDP)
+* `Amazon ECS CNI`_ (sets up EC2 instances using ENIs)
+* `VMware NSX-T CNI`_ (NSX L2/L3 network, L4/L7 LB)
+
 
 Objects
 -------
@@ -161,7 +180,9 @@ Objects
 Object Kind
 +++++++++++
 
-Every |k8s| object has a kind. Kinds are like classes, in which each one has a defined set of fields and values, required or optional, needed for that kind to work properly. They are also used by controllers to watch over for changes on specific kinds that they know how to act upon. The core replication controller watches over the ReplicaSet_ kind, for instance: whenever there's a new ReplicaSet_ or a change on an existing one, the controller do it's magic.
+Every |k8s| object has a kind, which are like classes, i.e. each one has a defined set of fields and values, required or optional, needed for that kind to be processed successfully by a controller.
+
+The controllers watch over for changes on specific kinds that they know how to act upon. The core replication controller watches over the ReplicaSet_ kind, for instance: whenever there's a new ReplicaSet_ or a change on an existing one, the controller do it's magic.
 
 But don't take the "defined" as granted: any kind can be stored in the cluster, even a kind completely unknown.
 
@@ -382,7 +403,14 @@ Node taints and tolerations
 .. rubric:: TODO
 
 
+.. #############################################################################
+.. replaces
+
 .. |k8s| replace:: Kubernetes
+
+.. #############################################################################
+.. links
+
 .. _k8s: https://kubernetes.io/docs/home/
 .. _helm: https://helm.sh/
 .. _yaml: https://yaml.org/
@@ -396,3 +424,15 @@ Node taints and tolerations
 .. _kubelet: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
 .. _kube-proxy: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 .. _kind: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+.. _node: https://kubernetes.io/docs/concepts/architecture/nodes/
+.. _CNI: https://github.com/containernetworking/cni
+.. _container network interface: https://github.com/containernetworking/cni
+.. _calico: https://github.com/projectcalico/cni-plugin
+.. _cilium: https://github.com/cilium/cilium
+.. _amazon ecs cni: https://github.com/aws/amazon-ecs-cni-plugins
+.. _vmware nsx-t cni: https://docs.vmware.com/en/VMware-NSX-T-Data-Center/2.2/com.vmware.nsxt.ncp_kubernetes.doc/GUID-6AFA724E-BB62-4693-B95C-321E8DDEA7E1.html
+
+.. #############################################################################
+.. retargets
+
+.. _pods: pod_
