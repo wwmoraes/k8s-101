@@ -190,8 +190,13 @@ But don't take the "defined" as granted: any kind can be stored in the cluster, 
 Object Management
 +++++++++++++++++
 
-.. rubric:: TODO
+Objects may be created and managed in multiple ways, using official and non-official tools. For instance:
 
+* `kubectl`: imperative changes (e.g. edit an object directly, scale, set container image, etc)
+* `kubectl`: declarative changes (e.g. apply a JSON, creating/updating object(s))
+* `helm`: declarative changes (e.g. parse a template and apply the resulting JSON, creating/updating object(s))
+
+Some cloud providers also allow modifying objects through its web interface. All of these tools and interfaces interact with the kube-apiserver_.
 
 Workloads
 ---------
