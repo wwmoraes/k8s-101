@@ -36,4 +36,4 @@ This will create the dist/html and dist/latex directories containing HTML and La
 
 ## Licensing
 
-The code in this project is licensed under MIT license.
+The code in this project is licensed under Apache 2.0 license.
